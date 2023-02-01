@@ -1,6 +1,8 @@
 """
 class structure for some basic 1d analytic distributions
 
+for many detailed discussions, see Numerical Recipes, section 6.14 (third edition)
+
 Each distribution comes with a pdf and cdf, sampled at points as specified in the call.
 Additional parameters are required as specified for each distribution.
 
@@ -36,14 +38,60 @@ import numpy as np
 from scipy.special import erf,gamma,gammainc, gammaincc
 
 
+class Gumbel():
+    """
+    The Gumbel Distribution (https://en.wikipedia.org/wiki/Gumbel_distribution)
+
+    The Gumbel distribution is used to model the distribution of maxima of a number of samples of various distributions.
+    That is, imagine a distribution of distribution of random draws from a Gaussian. What distribution do the maxima follow?
+
+        Methods:
+    __init__
+    _gumbel_pdf() - computes the probability density function of the Gumbel distribution
+    _gumbel_cdf() - computes the cumulative density function of the Gumbel distribution
+
+    Notes:
+    The difference of two Gumbel-distributed random variables has a logistic distribution (prove?)
+
+    """
+    def __init__(self,xvals,mu=0.,beta=1.):
+        self.xvals = xvals
+        self.dx    = xvals[1]-xvals[0]
+        self.mu    = mu
+        self.beta  = beta
+
+        self._gumbel_pdf()
+        self._gumbel_cdf()
+
+    def _gumbel_pdf(self):
+        """the pdf for the Gumbel distribution"""
+        argz = (self.xvals-self.mu)/self.beta
+
+        self.pdf = (1./self.beta)*np.exp(-1.*(argz + np.exp(-argz)))
+
+    def _gumbel_cdf(self):
+        """the cdf for the Gumbel distribution"""
+        argz = (self.xvals-self.mu)/self.beta
+
+        self.cdf = np.exp(-1.*np.exp(-1*(argz-self.mu)/self.beta))
+
+    def _gumbel_icdf(self,u):
+        """the inverse cdf for the Gumbel distribution: this allows for drawing from the Gumbel distribution randomly.
+        see Wikipedia entry. u must be between 0 and 1 (i.e. a random variate)."""
+        return self.mu - self.beta * np.log(-np.log(u))
+
+
+
 class Logistic():
     """
-    The Logistic Distribution
-    
-    With its shape the distribution resebles the Gaussian distribution, but it 
+    The Logistic Distribution (https://en.wikipedia.org/wiki/Logistic_distribution)
+
+    With its shape the distribution resebles the Gaussian distribution, but it
     has heavier tails. Its pdf is often used in neural nets.
-    
-        Methods:
+
+    See NR Section 6.14.4.
+
+    Methods:
     __init__
     _logistic_pdf() - computes the probability density function of the Logistic distribution
     _logistic_cdf() - computes the cumulative density function of the Logistic distribution
@@ -58,7 +106,9 @@ class Logistic():
         self._logistic_cdf()
 
     def _logistic_pdf(self):
-        """the pdf for the logistic distribution"""
+        """the pdf for the logistic distribution
+
+        compare to eq. 6.14.12, with y=arg"""
         arg = np.exp(-(self.xvals-self.mu)/self.s)
 
         self.pdf = (arg/(self.s*(1.+arg)**2.))
@@ -87,10 +137,10 @@ class Lorentzian():
 class Cauchy():
     """
     The Cauchy (Lorentzian) distribution
-    
+
     This distribution is also bell-shaped, it follows a power law form of y ~ x^(-2)
-    
-    It has no mean, no variance nor higher moments. 
+
+    It has no mean, no variance nor higher moments.
 
         Methods:
     __init__
@@ -123,10 +173,10 @@ class Cauchy():
 class Chi2():
     """
     The Chi-squared distribution
-    
+
     This distribution is most commonly used in the Chi-squared test of goodness
     of fit of observed data to hypothetical distributions.
-    
+
         Methods:
     __init__
     _chi2_pdf - computes the probability density function of the Chi2 distribution
@@ -165,14 +215,14 @@ class Chi2():
 class Gaussian():
     """
     Gaussian distribution (Normal distribution)
-    
+
     Distribution important in social and natural sciences to represent real-valued
     random variables with unknown distribution.
-    
-    According to Central Limit Theorem under some conditions, the average of 
-    many sample of a random variable, with finite mean and variance (which is 
+
+    According to Central Limit Theorem under some conditions, the average of
+    many sample of a random variable, with finite mean and variance (which is
     itself a random variable), will tend towards a Gaussian distribution.
-    
+
         Methods:
     __init__
     _gaussian_pdf - computes the probability density function of Gaussian
@@ -203,10 +253,10 @@ class Gaussian():
 class Lognormal():
     """
     The lognormal distribution.
-    
+
     Probability of a random variable whose logarithm is normally distributed.
     It is only defined for x>0!
-    
+
         Methods:
     __init__
     _lognormal_pdf - computes the probability density function of the Lognormal distribution
@@ -236,10 +286,10 @@ class Lognormal():
 class Maxwellian():
     """
     The Maxwell-Boltzamnn distribution.
-    
-    Used to describe particle speeds in ideal gases. 
+
+    Used to describe particle speeds in ideal gases.
     Enforce samples > 0.
-    
+
         Methods:
     __init__
     _maxwellian_pdf - computes the probability density function of the Maxwellian
@@ -265,9 +315,9 @@ class Maxwellian():
 class MultiGaussian():
     """
     Multivariate Gaussian distribution
-    
-    A generalisation of the Gaussian distribution to higher dimensions. 
-    
+
+    A generalisation of the Gaussian distribution to higher dimensions.
+
         Methods:
     __init__
     _trivariate_gaussian_pdf - computes the pdf of a trivariate Gaussian distribution
@@ -308,20 +358,20 @@ class Normal():
        self.sigma = G.sigma
        self.pdf   = G.pdf
        self.cdf   = G.cdf
-       
+
 class Poisson():
     """
     Poisson distribution.
-    
-    xvals only > or =  0  
-    
-    The Poisson distribution is a special case of the Binomial distribution ("Hit 
-    and Miss problem"), where the probability of each event tends to 0 and the 
-    number of trials tends to infinity. 
-    
-    It expresses the probability of given number of events happening in a set 
+
+    xvals only > or =  0
+
+    The Poisson distribution is a special case of the Binomial distribution ("Hit
+    and Miss problem"), where the probability of each event tends to 0 and the
+    number of trials tends to infinity.
+
+    It expresses the probability of given number of events happening in a set
     interval of time.
-    
+
         Methods:
     __init__
     _poisson_pdf - computes the probability density function of the Poisson distribution
@@ -336,7 +386,6 @@ class Poisson():
 
     def _poisson_pdf(self):
         self.pdf = (np.exp(- self.mu) * self.mu **(self.xvals)) / np.math.factorial(self.xvals)
-            
+
     def _poisson_cdf(self):
         self.cdf = gammaincc(np.floor(self.xvals), self.mu) / np.math.factorial(np.floor(self.xvals))
-        
