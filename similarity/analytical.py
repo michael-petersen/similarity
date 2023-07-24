@@ -30,6 +30,7 @@ todo:
 -add discussion of Maxwell-Boltzmann connection to Chi distribution (they are the same if Chi has 3 degrees of freedom and the scale parameter for MB is a = \sqrt{kT/m} for the gas case.)
 -add discussion of Chi^2 connection to Chi distribution (https://en.wikipedia.org/wiki/Chi_distribution)
 -add discussion of the gamma distribution (generalisation of exponential and chi-squared distribution)
+-add F-distributino (https://en.wikipedia.org/wiki/F-distribution)
 
 """
 
@@ -42,7 +43,7 @@ class Gumbel():
     """
     The Gumbel Distribution (https://en.wikipedia.org/wiki/Gumbel_distribution)
 
-    The Gumbel distribution is used to model the distribution of maxima of a number of samples of various distributions.
+    The Gumbel distribution is used to model the distribution of maxima of a number of samples of various normal distributions.
     That is, imagine a distribution of distribution of random draws from a Gaussian. What distribution do the maxima follow?
 
         Methods:
@@ -256,6 +257,8 @@ class Lognormal():
 
     Probability of a random variable whose logarithm is normally distributed.
     It is only defined for x>0!
+
+    The lognormal distribution arises from the product of uncorrelated normally-drawn variates.
 
         Methods:
     __init__
